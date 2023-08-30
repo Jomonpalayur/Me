@@ -1,20 +1,29 @@
 <?php
-if(empty($_POST['name']) || empty($_POST['subject']) || empty($_POST['message']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-  http_response_code(500);
-  exit();
-}
+// Get the data from the form
+$name = $_POST['name'];
+$email = $_POST['email'];
+$subject = $_POST['subject'];
+$message = $_POST['message'];
 
-$name = strip_tags(htmlspecialchars($_POST['name']));
-$email = strip_tags(htmlspecialchars($_POST['email']));
-$m_subject = strip_tags(htmlspecialchars($_POST['subject']));
-$message = strip_tags(htmlspecialchars($_POST['message']));
+// Create a Google Sheet spreadsheet
+$spreadsheet = new GoogleSpreadsheet('1OAoy3wi9CCDNf9V3cdHoMX2q4FkzWa5gDg9gx_y9LDo');
 
-$to = "info@example.com"; // Change this email to your //
-$subject = "$m_subject:  $name";
-$body = "You have received a new message from your website contact form.\n\n"."Here are the details:\n\nName: $name\n\n\nEmail: $email\n\nSubject: $m_subject\n\nMessage: $message";
-$header = "From: $email";
-$header .= "Reply-To: $email";	
+// Create a new sheet in the spreadsheet
+$sheet = $spreadsheet->createSheet();
+$sheet->setName('Sheet' . uniqid());
 
-if(!mail($to, $subject, $body, $header))
-  http_response_code(500);
+// Add a new row to the sheet
+$row = $sheet->appendRow([
+  $name,
+  $email,
+  $subject,
+  $message
+]);
+
+// Save the spreadsheet
+$spreadsheet->save();
+
+// Redirect the user to a confirmation page
+header('Location: /contact-success.php');
+
 ?>
